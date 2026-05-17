@@ -527,61 +527,7 @@ async def products(message: types.Message):
 async def my_id(message: types.Message):
     await message.answer(f"Ваш ID: {message.from_user.id}")
 
-@dp.message(lambda message: message.text == "📦 Залишки")
-async def show_stock(message: types.Message):
-
-    url = (
-        f"https://joinposter.com/api/storage.getStorageLeftovers"
-        f"?token={POSTER_TOKEN}"
-    )
-
-    try:
-        data = requests.get(url).json()
-
-        leftovers = data.get("response", [])
-
-        if not leftovers:
-            await message.answer("Склад порожній.")
-            return
-
-        low = []
-        normal = []
-
-        for item in leftovers:
-
-            name = item.get("ingredient_name", "Без назви")
-
-            amount = float(item.get("ingredient_left", 0))
-
-            unit = item.get("ingredient_unit", "")
-
-            limit_value = float(item.get("limit_value", 0))
-
-            line = f"— {name}: {round(amount, 2)} {unit}"
-
-            if limit_value > 0 and amount <= limit_value:
-                low.append(line + f" / мін {limit_value}")
-            else:
-                normal.append(line)
-
-        text = ""
-
-        if low:
-            text += "⚠️ Треба замовити:\n"
-            text += "\n".join(low)
-            text += "\n\n"
-
-        if normal:
-            text += "✅ Нормально:\n"
-            text += "\n".join(normal)
-
-        for i in range(0, len(text), 3500):
-            await message.answer(text[i:i + 3500])
-
-    except Exception as e:
-        await message.answer(f"Помилка складу: {e}")
-
-@dp.message(lambda message: message.text == "📦 Залишки")
+@dp.message(lambda message: message.text == "⚠️ Залишки")
 async def stock_menu(message: types.Message):
     await message.answer(
         "Оберіть тип залишків:",
