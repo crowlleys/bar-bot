@@ -386,7 +386,9 @@ async def critical_stock(message: types.Message):
         for item in leftovers:
             name = item.get("ingredient_name", "Без назви")
             amount = round(float(item.get("ingredient_left", 0)), 2)
-            unit = item.get("ingredient_unit", "")
+            unit = item.get("ingredient_unit", "").strip().lower()
+            if unit in ["p", "р"]:
+                unit = "шт"
             limit_value = round(float(item.get("limit_value", 0)), 2)
 
             if amount <= 0:
