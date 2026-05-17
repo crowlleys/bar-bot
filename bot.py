@@ -2,6 +2,8 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 import asyncio
 import requests
 import json
+import threading
+import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -12,8 +14,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from flask import Flask
-import threading
-import os
 
 app = Flask(__name__)
 
