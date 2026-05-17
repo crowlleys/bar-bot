@@ -12,10 +12,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-BOT_TOKEN = "8737392426:AAGniC5P1LhU0xcLimsNJoyq487WhQJjZf8"
-POSTER_TOKEN = "848478:385146064d954f94b2a0a2d349f77e54"
+import os
 
-CHAT_ID = 123456789
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+POSTER_TOKEN = os.getenv("POSTER_TOKEN")
+CHAT_ID = int(os.getenv("CHAT_ID"))
+
 ALLOWED_USERS = [
     710946099,  # твій Telegram ID
 ]
@@ -29,7 +31,7 @@ menu_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🕘 Зміна")],
         [KeyboardButton(text="🍸 Меню")],
-        [KeyboardButton(text="📦 Залишки")],
+        [KeyboardButton(text="⚠️ Залишки")],
         [KeyboardButton(text="🧹 Прибирання")],
         [KeyboardButton(text="🧾 Продажі")],
     ],
@@ -40,6 +42,15 @@ shift_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🔓 Відкрити зміну")],
         [KeyboardButton(text="🔒 Закрити зміну")],
+        [KeyboardButton(text="⬅️ Назад")],
+    ],
+    resize_keyboard=True
+)
+
+stock_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="⚠️ Залишки")],
+        [KeyboardButton(text="📋 Усі залишки")],
         [KeyboardButton(text="⬅️ Назад")],
     ],
     resize_keyboard=True
@@ -557,6 +568,12 @@ async def show_stock(message: types.Message):
     except Exception as e:
         await message.answer(f"Помилка складу: {e}")
 
+@dp.message(lambda message: message.text == "📦 Залишки")
+async def stock_menu(message: types.Message):
+    await message.answer(
+        "Оберіть тип залишків:",
+        reply_markup=stock_keyboard
+    )
 
 @dp.message(lambda message: message.text == "🧹 Прибирання")
 @dp.message(Command("прибирання"))
