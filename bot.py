@@ -486,12 +486,6 @@ async def all_stock(message: types.Message):
         await message.answer(f"Помилка залишків: {e}")
 
 
-@dp.message(lambda message: message.text == "🧹 Прибирання")
-@dp.message(Command("прибирання"))
-async def cleaning(message: types.Message):
-    await message.answer(get_cleaning_text())
-
-
 @dp.message(lambda message: message.text == "🧾 Продажі")
 @dp.message(Command("sales"))
 async def sales(message: types.Message):
