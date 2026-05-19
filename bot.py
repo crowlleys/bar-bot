@@ -376,6 +376,18 @@ async def stock_menu(message: types.Message):
     await message.answer("Оберіть тип залишків:", reply_markup=stock_keyboard)
 
 
+def normalize_unit(unit):
+    unit = str(unit).strip().lower()
+
+    replacements = {
+        "р": "шт.",
+        "l": "л.",
+        "kg": "кг.",
+    }
+
+    return replacements.get(unit, unit)
+
+
 @dp.message(lambda message: message.text == "⚠️ Критичні залишки")
 async def critical_stock(message: types.Message):
     try:
@@ -386,15 +398,7 @@ async def critical_stock(message: types.Message):
         for item in leftovers:
             name = item.get("ingredient_name", "Без назви")
             amount = round(float(item.get("ingredient_left", 0)), 2)
-            unit = normalize_unit(item.get("ingredient_unit", "")).strip().lower()
-        
-def normalize_unit(unit):
-    unit = str(unit).strip().lower()
-            if unit in ["p", "р"]:
-                unit = "шт"
-                    "l": "л",
-                    "lt": "л",
-                    "kg": "кг",
+            unit = normalize_unit(item.get("ingredient_unit", ""))
             limit_value = round(float(item.get("limit_value", 0)), 2)
 
             if amount <= 0:
