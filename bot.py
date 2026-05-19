@@ -381,7 +381,6 @@ def normalize_unit(unit):
 
     replacements = {
         "p": "шт.",
-        "р": "шт.",
         "l": "л.",
         "kg": "кг",
     }
