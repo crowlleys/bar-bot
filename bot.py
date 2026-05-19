@@ -584,12 +584,18 @@ async def shift_archive(message: types.Message):
     for item in reversed(last_items):
         shift_type = "🔓 Відкриття" if item["type"] == "open" else "🔒 Закриття"
 
+        clean_text = item["text"]
+
+        clean_text = clean_text.replace("🔓 Відкриття зміни", "")
+        clean_text = clean_text.replace("🔒 Закриття зміни", "")
+
         text += (
             f"{shift_type}\n"
-            f"Дата: {item['date']}\n"
-            f"Час: {item['time']}\n"
-            f"Хто: {item['user']}\n"
-            f"{item['text']}\n\n"
+            f"📅 {item['date']}\n"
+            f"🕒 {item['time']}\n"
+            f"👤 {item['user']}\n\n"
+            f"{clean_text.strip()}\n\n"
+            f"──────────────\n\n"
         )
 
     for i in range(0, len(text), 3500):
