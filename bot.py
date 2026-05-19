@@ -222,19 +222,6 @@ def get_leftovers_from_poster():
 
 @dp.message(Command("start", "старт"))
 async def start(message: types.Message, state: FSMContext):
-    archive = load_shift_archive()
-
-archive.append({
-    "type": "open",
-    "user": user,
-    "time": time_now,
-    "date": datetime.now(KYIV_TZ).strftime("%m-%d-%Y"),
-    "text": report_text
-})
-
-save_shift_archive(archive)
-
-await message.answer(get_cleaning_text())
     await state.clear()
     await message.answer("Бар бот працює 🍸", reply_markup=menu_keyboard)
 
@@ -249,17 +236,6 @@ async def user_id(message: types.Message):
 
 @dp.message(lambda message: message.text == "⬅️ Назад")
 async def back_to_main_menu(message: types.Message, state: FSMContext):
-    archive = load_shift_archive()
-
-archive.append({
-    "type": "close",
-    "user": user,
-    "time": time_now,
-    "date": datetime.now(KYIV_TZ).strftime("%m-%d-%Y"),
-    "text": report_text
-})
-
-save_shift_archive(archive)
     await state.clear()
     await message.answer("Головне меню:", reply_markup=menu_keyboard)
 
@@ -308,8 +284,21 @@ async def save_open_report(message: types.Message, state: FSMContext):
             caption="📸 Фото до відкриття"
         )
 
-    await state.clear()
+    archive = load_shift_archive()
 
+    archive.append({
+        "type": "open",
+        "user": user,
+        "time": time_now,
+        "date": datetime.now(KYIV_TZ).strftime("%m-%d-%Y"),
+        "text": report_text
+    })
+
+    save_shift_archive(archive)
+
+    await message.answer(get_cleaning_text())
+
+    await state.clear()
 
 @dp.message(lambda message: message.text == "🔒 Закрити зміну")
 async def close_shift_template(message: types.Message, state: FSMContext):
@@ -355,6 +344,18 @@ async def save_close_report(message: types.Message, state: FSMContext):
             message.photo[-1].file_id,
             caption="🧾 Фото чека"
         )
+
+    archive = load_shift_archive()
+
+    archive.append({
+        "type": "close",
+        "user": user,
+        "time": time_now,
+        "date": datetime.now(KYIV_TZ).strftime("%m-%d-%Y"),
+        "text": report_text
+    })
+
+    save_shift_archive(archive)
 
     await state.clear()
 
