@@ -456,25 +456,31 @@ async def cleaning(message: types.Message):
 
 
 @dp.message(lambda message: message.text == "🧾 Продажі")
+@dp.message(lambda message: message.text == "🧾 Продажі")
 @dp.message(Command("sales"))
 async def sales(message: types.Message):
+
     if message.text.startswith("/sales"):
         parts = message.text.split()
 
         if len(parts) > 1:
-            date_value = parts[1]
+            poster_date = parts[1]
         else:
-            date_value = datetime.now(KYIV_TZ).strftime("%m-%d-%Y")
+            poster_date = datetime.now(KYIV_TZ).strftime("%Y-%m-%d")
+
     else:
-        date_value = datetime.now(KYIV_TZ).strftime("%m-%d-%Y")
         poster_date = datetime.now(KYIV_TZ).strftime("%Y-%m-%d")
-        display_date = datetime.now(KYIV_TZ).strftime("%m-%d-%Y")
+
+    display_date = datetime.strptime(
+        poster_date,
+        "%Y-%m-%d"
+    ).strftime("%m-%d-%Y")
 
     transactions_url = (
         f"https://joinposter.com/api/transactions.getTransactions"
         f"?token={POSTER_TOKEN}"
-        f"&date_from={date_value}"
-        f"&date_to={date_value}"
+        f"&date_from={poster_date}"
+        f"&date_to={poster_date}"
         f"&page=1"
         f"&per_page=100"
     )
