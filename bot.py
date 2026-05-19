@@ -58,7 +58,7 @@ menu_keyboard = ReplyKeyboardMarkup(
         [KeyboardButton(text="🕘 Зміна")],
         [KeyboardButton(text="🍸 Меню")],
         [KeyboardButton(text="⚠️ Залишки")],
-        [KeyboardButton(text="🧹 Прибирання")],
+        [KeyboardButton(text="📚 Архів змін")],
         [KeyboardButton(text="🧾 Продажі")],
     ],
     resize_keyboard=True
@@ -222,6 +222,19 @@ def get_leftovers_from_poster():
 
 @dp.message(Command("start", "старт"))
 async def start(message: types.Message, state: FSMContext):
+    archive = load_shift_archive()
+
+archive.append({
+    "type": "open",
+    "user": user,
+    "time": time_now,
+    "date": datetime.now(KYIV_TZ).strftime("%m-%d-%Y"),
+    "text": report_text
+})
+
+save_shift_archive(archive)
+
+await message.answer(get_cleaning_text())
     await state.clear()
     await message.answer("Бар бот працює 🍸", reply_markup=menu_keyboard)
 
@@ -236,6 +249,17 @@ async def user_id(message: types.Message):
 
 @dp.message(lambda message: message.text == "⬅️ Назад")
 async def back_to_main_menu(message: types.Message, state: FSMContext):
+    archive = load_shift_archive()
+
+archive.append({
+    "type": "close",
+    "user": user,
+    "time": time_now,
+    "date": datetime.now(KYIV_TZ).strftime("%m-%d-%Y"),
+    "text": report_text
+})
+
+save_shift_archive(archive)
     await state.clear()
     await message.answer("Головне меню:", reply_markup=menu_keyboard)
 
@@ -387,6 +411,18 @@ def normalize_unit(unit):
 
     return replacements.get(unit, unit)
 
+def load_shift_archive():
+    try:
+        with open("shift_archive.json", "r", encoding="utf-8") as file:
+            return json.load(file)
+    except:
+        return []
+
+
+def save_shift_archive(data):
+    with open("shift_archive.json", "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
 
 @dp.message(lambda message: message.text == "⚠️ Критичні залишки")
 async def critical_stock(message: types.Message):
@@ -537,6 +573,31 @@ async def sales(message: types.Message):
     except Exception as e:
         await message.answer(f"Помилка продажів: {e}")
 
+@dp.message(lambda message: message.text == "📚 Архів змін")
+async def shift_archive(message: types.Message):
+    archive = load_shift_archive()
+
+    if not archive:
+        await message.answer("Архів змін поки порожній.")
+        return
+
+    last_items = archive[-10:]
+
+    text = "📚 Останні зміни:\n\n"
+
+    for item in reversed(last_items):
+        shift_type = "🔓 Відкриття" if item["type"] == "open" else "🔒 Закриття"
+
+        text += (
+            f"{shift_type}\n"
+            f"Дата: {item['date']}\n"
+            f"Час: {item['time']}\n"
+            f"Хто: {item['user']}\n"
+            f"{item['text']}\n\n"
+        )
+
+    for i in range(0, len(text), 3500):
+        await message.answer(text[i:i + 3500])
 
 async def main():
     scheduler = AsyncIOScheduler(timezone="Europe/Kyiv")
