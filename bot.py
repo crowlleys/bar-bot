@@ -380,6 +380,7 @@ def normalize_unit(unit):
     unit = str(unit).strip().lower()
 
     replacements = {
+        "р": "шт.",
         "p": "шт.",
         "l": "л.",
         "kg": "кг",
