@@ -497,7 +497,13 @@ async def sales(message: types.Message):
 
         for transaction in transactions:
             transaction_id = transaction.get("transaction_id")
-            date_close = transaction.get("date_close", "")
+            raw_date = transaction.get("date_close", "")
+
+            try:
+                parsed_date = datetime.strptime(raw_date, "%Y-%m-%d %H:%M:%S")
+                date_close = parsed_date.strftime("%m-%d-%Y %H:%M")
+            except:
+                date_close = raw_date
 
             text += f"Чек #{transaction_id} — {date_close}\n"
 
