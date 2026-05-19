@@ -13,7 +13,10 @@ import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from flask import Flask
-
+rm recipes.json
+rm stock.json
+rm processed_transactions.json
+rm processed_supplies.json
 
 app = Flask(__name__)
 
