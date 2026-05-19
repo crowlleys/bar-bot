@@ -392,6 +392,9 @@ def normalize_unit(unit):
     unit = str(unit).strip().lower()
             if unit in ["p", "р"]:
                 unit = "шт"
+                    "l": "л",
+                    "lt": "л",
+                    "kg": "кг",
             limit_value = round(float(item.get("limit_value", 0)), 2)
 
             if amount <= 0:
