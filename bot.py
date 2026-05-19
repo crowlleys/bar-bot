@@ -468,9 +468,11 @@ async def sales(message: types.Message):
         if len(parts) > 1:
             date_value = parts[1]
         else:
-            date_value = datetime.now(KYIV_TZ).strftime("%Y-%m-%d")
+            date_value = datetime.now(KYIV_TZ).strftime("%m-%d-%Y")
     else:
-        date_value = datetime.now(KYIV_TZ).strftime("%Y-%m-%d")
+        date_value = datetime.now(KYIV_TZ).strftime("%m-%d-%Y")
+        poster_date = datetime.now(KYIV_TZ).strftime("%Y-%m-%d")
+        display_date = datetime.now(KYIV_TZ).strftime("%m-%d-%Y")
 
     transactions_url = (
         f"https://joinposter.com/api/transactions.getTransactions"
@@ -490,7 +492,7 @@ async def sales(message: types.Message):
         product_map, modification_map = build_product_maps(menu_data)
         transactions = get_transactions_list(transactions_data)
 
-        text = f"🧾 Продажі за {date_value}:\n\n"
+        text = f"🧾 Продажі за {display_date}:\n\n"
         found = False
 
         for transaction in transactions:
