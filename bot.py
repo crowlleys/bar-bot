@@ -456,7 +456,6 @@ async def cleaning(message: types.Message):
 
 
 @dp.message(lambda message: message.text == "🧾 Продажі")
-@dp.message(lambda message: message.text == "🧾 Продажі")
 @dp.message(Command("sales"))
 async def sales(message: types.Message):
 
@@ -464,17 +463,24 @@ async def sales(message: types.Message):
         parts = message.text.split()
 
         if len(parts) > 1:
-            poster_date = parts[1]
+            input_date = parts[1]
+
+            try:
+                parsed_date = datetime.strptime(input_date, "%m-%d-%Y")
+                poster_date = parsed_date.strftime("%Y-%m-%d")
+                display_date = input_date
+
+            except:
+                poster_date = input_date
+                display_date = input_date
+
         else:
             poster_date = datetime.now(KYIV_TZ).strftime("%Y-%m-%d")
+            display_date = datetime.now(KYIV_TZ).strftime("%m-%d-%Y")
 
     else:
         poster_date = datetime.now(KYIV_TZ).strftime("%Y-%m-%d")
-
-    display_date = datetime.strptime(
-        poster_date,
-        "%Y-%m-%d"
-    ).strftime("%m-%d-%Y")
+        display_date = datetime.now(KYIV_TZ).strftime("%m-%d-%Y")
 
     transactions_url = (
         f"https://joinposter.com/api/transactions.getTransactions"
@@ -522,7 +528,7 @@ async def sales(message: types.Message):
             found = True
 
         if not found:
-            await message.answer(f"Продажів за {date_value} поки не знайдено.")
+            await message.answer(f"Продажів за {display_date} поки не знайдено.")
             return
 
         for i in range(0, len(text), 3500):
