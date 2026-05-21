@@ -274,10 +274,6 @@ async def all_stock(message: types.Message):
         for i in range(0, len(text), 3500):
             await message.answer(text[i:i + 3500])
 
-    except Exception as e:
-        await message.answer(f"Помилка залишків: {e}")
-
-
 @dp.message(lambda message: message.text == "📚 Архів змін")
 async def shift_archive(message: types.Message):
     archive = load_shift_archive()
