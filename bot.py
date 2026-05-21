@@ -195,6 +195,22 @@ def get_leftovers_from_poster():
     return data.get("response", [])
 
 
+def get_poster_categories_map():
+    url = f"https://joinposter.com/api/menu.getProducts?token={POSTER_TOKEN}"
+
+    data = requests.get(url).json()
+    categories = {}
+
+    for item in data.get("response", []):
+        name = item.get("product_name", "")
+        category = item.get("category_name") or "Без категорії"
+
+        if name:
+            categories[name] = category
+
+    return categories
+
+
 def get_transactions_list(transactions_data):
     response = transactions_data.get("response", {})
 
@@ -442,9 +458,9 @@ async def critical_stock(message: types.Message):
     try:
         leftovers = get_leftovers_from_poster()
         min_stock = load_min_stock()
+        category_map = get_poster_categories_map()
 
-        empty_items = []
-        low_items = []
+        grouped = {}
 
         for item in leftovers:
             name = item.get("ingredient_name", "Без назви")
@@ -456,21 +472,33 @@ async def critical_stock(message: types.Message):
             unit = normalize_unit(item.get("ingredient_unit", ""))
             min_amount = float(min_stock[name])
 
-            if amount <= 0:
-                empty_items.append(f"🚨 {name}: {amount:g} {unit}")
-            elif amount <= min_amount:
-                low_items.append(f"⚠️ {name}: {amount:g} {unit} / мін {min_amount:g} {unit}")
+            if amount > min_amount:
+                continue
 
-        text = "⚠️ Критичні залишки\n\n"
+            category = category_map.get(name, "Без категорії")
 
-        if empty_items:
-            text += "🚨 Немає в наявності:\n" + "\n".join(empty_items) + "\n\n"
+            if category not in grouped:
+                grouped[category] = []
 
-        if low_items:
-            text += "⚠️ Треба замовити:\n" + "\n".join(low_items)
+            icon = "🚨" if amount <= 0 else "⚠️"
 
-        if not empty_items and not low_items:
-            text += "✅ Все нормально. Критичних залишків немає."
+            grouped[category].append(
+                f"{icon} {name}: {amount:g} {unit}"
+            )
+
+        if not grouped:
+            await message.answer("✅ Все нормально. Критичних залишків немає.")
+            return
+
+        text = "⚠️ Критичні залишки:\n\n"
+
+        for category, items in grouped.items():
+            text += f"📂 {category}:\n"
+
+            for line in items:
+                text += f"{line}\n"
+
+            text += "\n"
 
         for i in range(0, len(text), 3500):
             await message.answer(text[i:i + 3500])
@@ -484,8 +512,9 @@ async def all_stock(message: types.Message):
     try:
         leftovers = get_leftovers_from_poster()
         min_stock = load_min_stock()
+        category_map = get_poster_categories_map()
 
-        items = []
+        grouped = {}
 
         for item in leftovers:
             name = item.get("ingredient_name", "Без назви")
@@ -495,15 +524,27 @@ async def all_stock(message: types.Message):
 
             amount = round(float(item.get("ingredient_left", 0)), 2)
             unit = normalize_unit(item.get("ingredient_unit", ""))
-            min_amount = float(min_stock[name])
 
-            items.append(f"— {name}: {amount:g} {unit} / мін {min_amount:g} {unit}")
+            category = category_map.get(name, "Без категорії")
 
-        if not items:
+            if category not in grouped:
+                grouped[category] = []
+
+            grouped[category].append(f"— {name}: {amount:g} {unit}")
+
+        if not grouped:
             await message.answer("Список контрольованих залишків порожній.")
             return
 
-        text = "📋 Усі контрольовані залишки:\n\n" + "\n".join(items)
+        text = "📋 Усі контрольовані залишки:\n\n"
+
+        for category, items in grouped.items():
+            text += f"📂 {category}:\n"
+
+            for line in items:
+                text += f"{line}\n"
+
+            text += "\n"
 
         for i in range(0, len(text), 3500):
             await message.answer(text[i:i + 3500])
