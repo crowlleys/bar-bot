@@ -256,10 +256,8 @@ async def open_shift_template(message: types.Message, state: FSMContext):
     template = (
         "Скопіюй, заповни і відправ одним повідомленням:\n\n"
         f"🔓 Відкриття зміни\n"
-        f"Дата: {today}\n\n"
         f"Розмін:\n"
         f"Сейф:\n"
-        f"Коментар:"
     )
 
     await message.answer(template)
@@ -430,25 +428,36 @@ def save_shift_archive(data):
 async def critical_stock(message: types.Message):
     try:
         leftovers = get_leftovers_from_poster()
+        min_stock = load_min_stock()
 
-        critical = []
+        empty_items = []
+        low_items = []
 
         for item in leftovers:
             name = item.get("ingredient_name", "Без назви")
+
+            if name not in min_stock:
+                continue
+
             amount = round(float(item.get("ingredient_left", 0)), 2)
             unit = normalize_unit(item.get("ingredient_unit", ""))
-            limit_value = round(float(item.get("limit_value", 0)), 2)
+            min_amount = float(min_stock[name])
 
             if amount <= 0:
-                critical.append(f"🚨 {name}: {amount:g} {unit}")
-            elif limit_value > 0 and amount <= limit_value:
-                critical.append(f"⚠️ {name}: {amount:g} {unit} / мін {limit_value:g} {unit}")
+                empty_items.append(f"🚨 {name}: {amount:g} {unit}")
+            elif amount <= min_amount:
+                low_items.append(f"⚠️ {name}: {amount:g} {unit} / мін {min_amount:g} {unit}")
 
-        if not critical:
-            await message.answer("✅ Критичних залишків немає.")
-            return
+        text = "⚠️ Критичні залишки\n\n"
 
-        text = "⚠️ Критичні залишки:\n\n" + "\n".join(critical)
+        if empty_items:
+            text += "🚨 Немає в наявності:\n" + "\n".join(empty_items) + "\n\n"
+
+        if low_items:
+            text += "⚠️ Треба замовити:\n" + "\n".join(low_items)
+
+        if not empty_items and not low_items:
+            text += "✅ Все нормально. Критичних залишків немає."
 
         for i in range(0, len(text), 3500):
             await message.answer(text[i:i + 3500])
@@ -461,24 +470,27 @@ async def critical_stock(message: types.Message):
 async def all_stock(message: types.Message):
     try:
         leftovers = get_leftovers_from_poster()
+        min_stock = load_min_stock()
 
         items = []
 
         for item in leftovers:
             name = item.get("ingredient_name", "Без назви")
-            amount = round(float(item.get("ingredient_left", 0)), 2)
-            unit = normalize_unit(item.get("ingredient_unit", ""))
 
-            if amount == 0:
+            if name not in min_stock:
                 continue
 
-            items.append(f"— {name}: {amount:g} {unit}")
+            amount = round(float(item.get("ingredient_left", 0)), 2)
+            unit = normalize_unit(item.get("ingredient_unit", ""))
+            min_amount = float(min_stock[name])
+
+            items.append(f"— {name}: {amount:g} {unit} / мін {min_amount:g} {unit}")
 
         if not items:
-            await message.answer("Склад порожній.")
+            await message.answer("Список контрольованих залишків порожній.")
             return
 
-        text = "📋 Усі залишки:\n\n" + "\n".join(items)
+        text = "📋 Усі контрольовані залишки:\n\n" + "\n".join(items)
 
         for i in range(0, len(text), 3500):
             await message.answer(text[i:i + 3500])
@@ -572,6 +584,12 @@ async def sales(message: types.Message):
 @dp.message(lambda message: message.text == "📚 Архів змін")
 async def shift_archive(message: types.Message):
     archive = load_shift_archive()
+def load_min_stock():
+    try:
+        with open("min_stock.json", "r", encoding="utf-8") as file:
+            return json.load(file)
+    except:
+        return {}
 
     if not archive:
         await message.answer("Архів змін поки порожній.")
