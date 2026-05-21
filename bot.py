@@ -15,6 +15,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from flask import Flask
 
+
 app = Flask(__name__)
 
 
@@ -146,6 +147,53 @@ async def send_morning_message():
         await bot.send_message(CHAT_ID, get_morning_message())
 
 
+def load_shift_archive():
+    try:
+        with open("shift_archive.json", "r", encoding="utf-8") as file:
+            return json.load(file)
+    except:
+        return []
+
+
+def save_shift_archive(data):
+    with open("shift_archive.json", "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+def load_min_stock():
+    try:
+        with open("min_stock.json", "r", encoding="utf-8") as file:
+            return json.load(file)
+    except:
+        return {}
+
+
+def normalize_unit(unit):
+    unit = str(unit).strip().lower()
+
+    replacements = {
+        "р": "шт.",
+        "p": "шт.",
+        "pcs": "шт.",
+        "pc": "шт.",
+        "l": "л.",
+        "lt": "л.",
+        "kg": "кг",
+    }
+
+    return replacements.get(unit, unit)
+
+
+def get_leftovers_from_poster():
+    url = (
+        f"https://joinposter.com/api/storage.getStorageLeftovers"
+        f"?token={POSTER_TOKEN}"
+    )
+
+    data = requests.get(url).json()
+    return data.get("response", [])
+
+
 def get_transactions_list(transactions_data):
     response = transactions_data.get("response", {})
 
@@ -211,16 +259,6 @@ def get_full_product_name(product, product_map, modification_map):
     return base_name
 
 
-def get_leftovers_from_poster():
-    url = (
-        f"https://joinposter.com/api/storage.getStorageLeftovers"
-        f"?token={POSTER_TOKEN}"
-    )
-
-    data = requests.get(url).json()
-    return data.get("response", [])
-
-
 @dp.message(Command("start", "старт"))
 async def start(message: types.Message, state: FSMContext):
     await state.clear()
@@ -250,8 +288,6 @@ async def shift_menu(message: types.Message, state: FSMContext):
 @dp.message(lambda message: message.text == "🔓 Відкрити зміну")
 async def open_shift_template(message: types.Message, state: FSMContext):
     await state.clear()
-
-    today = datetime.now(KYIV_TZ).strftime("%d/%m/%Y")
 
     template = (
         "Скопіюй, заповни і відправ одним повідомленням:\n\n"
