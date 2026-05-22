@@ -46,9 +46,14 @@ dp = Dispatcher(storage=MemoryStorage())
 class AccessMiddleware(BaseMiddleware):
     async def __call__(self, handler, event, data):
         if isinstance(event, types.Message):
+
+            if event.text == "/id":
+                return await handler(event, data)
+
             if event.from_user.id not in ALLOWED_USERS:
                 await event.answer("⛔ У вас немає доступу до цього бота.")
                 return
+
         return await handler(event, data)
 
 
