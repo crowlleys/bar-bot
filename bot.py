@@ -513,20 +513,23 @@ async def critical_stock(message: types.Message):
             if category not in grouped:
                 grouped[category] = []
 
-            icon = "🚨" if amount <= 0 else "⚠️"
-
-            grouped[category].append(
-                f"{icon} {name}: {amount:g} {unit}"
-            )
+            if amount <= 0:
+                grouped[category].append(
+                    f"• {name} — немає"
+                )
+            else:
+                grouped[category].append(
+                    f"• {name} — {amount:g} {unit}"
+                )
 
         if not grouped:
             await message.answer("✅ Все нормально. Критичних залишків немає.")
             return
 
-        text = "⚠️ Критичні залишки:\n\n"
+        text = "📋 Залишки, які треба перевірити:\n\n"
 
         for category, items in grouped.items():
-            text += f"{category}:\n"
+            text += f"{category}\n"
 
             for line in items:
                 text += f"{line}\n"
