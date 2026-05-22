@@ -185,6 +185,56 @@ def normalize_unit(unit):
     return replacements.get(unit, unit)
 
 
+def get_stock_category(name):
+    rules = {
+        "🍺 Пиво / Сидр": [
+            "Пиво", "Сидр", "MOVA IPA", "Berliner", "Underwood"
+        ],
+        "🥤 Б/А напої": [
+            "Coca-Cola", "Dr. Pepper", "Schweppes", "ROYAL CLUB",
+            "Лимонад", "Напій", "Комбуча", "Квас", "Сік", "Моршинська",
+            "Джин Б/А", "Ром Captain Morgan Б/А", "Аперетіва Б/А",
+            "Ігристе б/а", "Vintense"
+        ],
+        "🍷 Вино / Ігристе": [
+            "Вино", "Ігристе", "Портвейн", "Мадейра", "Сангрія",
+            "Rose", "Shiraz", "Sauvignon", "Zinfandel", "Лелека",
+            "Vallformosa", "Comte", "San Martino"
+        ],
+        "🥃 Міцний алкоголь": [
+            "Віскі", "Бурбон", "Ром", "Джин", "Горілка", "Текіла",
+            "Jagermeister", "Кальвадос", "Laphroaig", "Paddy",
+            "Wild Turkey", "Four Roses", "Label 5"
+        ],
+        "🍸 Лікери / Бітери / Вермути": [
+            "Лікер", "Вермут", "Біттер", "Pisang", "Triple Sec",
+            "Negroni", "Molly", "Minttu", "Fireball", "Schwartzhog"
+        ],
+        "🍒 Настоянки": [
+            "Настоянка", "Тархун"
+        ],
+        "🥣 Сиропи": [
+            "Сироп"
+        ],
+        "🍽 Їжа": [
+            "Кіш", "Арахіс", "Начоси", "Оливки", "Гріссіні", "Тортик"
+        ],
+        "☕ Кава / Чай": [
+            "Кава", "Чай"
+        ],
+        "🍋 Інше / Заготовки": [
+            "Лимон", "Цукор", "Каркаде", "Кокосове молоко"
+        ],
+    }
+
+    for category, keywords in rules.items():
+        for keyword in keywords:
+            if keyword.lower() in name.lower():
+                return category
+
+    return "📦 Інше"
+
+
 def get_leftovers_from_poster():
     url = (
         f"https://joinposter.com/api/storage.getStorageLeftovers"
@@ -193,22 +243,6 @@ def get_leftovers_from_poster():
 
     data = requests.get(url).json()
     return data.get("response", [])
-
-
-def get_poster_categories_map():
-    url = f"https://joinposter.com/api/menu.getProducts?token={POSTER_TOKEN}"
-
-    data = requests.get(url).json()
-    categories = {}
-
-    for item in data.get("response", []):
-        name = item.get("product_name", "")
-        category = item.get("category_name") or "Без категорії"
-
-        if name:
-            categories[name] = category
-
-    return categories
 
 
 def get_transactions_list(transactions_data):
@@ -458,7 +492,6 @@ async def critical_stock(message: types.Message):
     try:
         leftovers = get_leftovers_from_poster()
         min_stock = load_min_stock()
-        category_map = get_poster_categories_map()
 
         grouped = {}
 
@@ -475,7 +508,7 @@ async def critical_stock(message: types.Message):
             if amount > min_amount:
                 continue
 
-            category = category_map.get(name, "Без категорії")
+            category = get_stock_category(name)
 
             if category not in grouped:
                 grouped[category] = []
@@ -493,7 +526,7 @@ async def critical_stock(message: types.Message):
         text = "⚠️ Критичні залишки:\n\n"
 
         for category, items in grouped.items():
-            text += f"📂 {category}:\n"
+            text += f"{category}:\n"
 
             for line in items:
                 text += f"{line}\n"
@@ -512,7 +545,6 @@ async def all_stock(message: types.Message):
     try:
         leftovers = get_leftovers_from_poster()
         min_stock = load_min_stock()
-        category_map = get_poster_categories_map()
 
         grouped = {}
 
@@ -525,7 +557,7 @@ async def all_stock(message: types.Message):
             amount = round(float(item.get("ingredient_left", 0)), 2)
             unit = normalize_unit(item.get("ingredient_unit", ""))
 
-            category = category_map.get(name, "Без категорії")
+            category = get_stock_category(name)
 
             if category not in grouped:
                 grouped[category] = []
@@ -539,7 +571,7 @@ async def all_stock(message: types.Message):
         text = "📋 Усі контрольовані залишки:\n\n"
 
         for category, items in grouped.items():
-            text += f"📂 {category}:\n"
+            text += f"{category}:\n"
 
             for line in items:
                 text += f"{line}\n"
