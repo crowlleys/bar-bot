@@ -36,6 +36,7 @@ CHAT_ID = int(os.getenv("CHAT_ID", "0"))
 ALLOWED_USERS = [
     710946099, 
     478270698,
+    375561805,
 ]
 
 KYIV_TZ = ZoneInfo("Europe/Kyiv")
