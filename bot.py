@@ -285,13 +285,17 @@ def get_leftovers_from_poster():
     data = requests.get(url).json()
     return data.get("response", [])
 
-@dp.message(Command("test_menu"))
-async def test_menu(message: types.Message):
-    menu_url = f"https://joinposter.com/api/menu.getProducts?token={POSTER_TOKEN}"
+@dp.message(Command("test_product"))
+async def test_product(message: types.Message):
+    url = (
+        f"https://joinposter.com/api/menu.getProducts"
+        f"?token={POSTER_TOKEN}"
+        f"&product_id=1"
+    )
 
-    data = requests.get(menu_url).json()
+    data = requests.get(url).json()
 
-    text = json.dumps(data["response"][0], ensure_ascii=False, indent=2)
+    text = json.dumps(data, ensure_ascii=False, indent=2)
 
     await message.answer(text[:4000])
 
