@@ -285,24 +285,6 @@ def get_leftovers_from_poster():
     data = requests.get(url).json()
     return data.get("response", [])
 
-@dp.message(Command("test_product"))
-async def test_product(message: types.Message):
-    query = message.text.replace("/test_product", "").strip().lower()
-
-    data = requests.get(
-        f"https://joinposter.com/api/menu.getProducts?token={POSTER_TOKEN}"
-    ).json()
-
-    for item in data.get("response", []):
-        name = item.get("product_name", "").lower()
-
-        if query in name:
-            text = json.dumps(item, ensure_ascii=False, indent=2)
-    for i in range(0, len(text), 3500):
-        await message.answer(text[i:i + 3500])
-            return
-
-    await message.answer("Не знайшов такий продукт.")
 
 
 def get_transactions_list(transactions_data):
