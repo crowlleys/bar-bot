@@ -140,11 +140,43 @@ def get_cleaning_text():
     return text
 
 
+def get_stop_list_text():
+    try:
+        leftovers = get_leftovers_from_poster()
+        min_stock = load_min_stock()
+
+        stop_items = []
+
+        for item in leftovers:
+            name = item.get("ingredient_name", "Без назви")
+
+            if name not in min_stock:
+                continue
+
+            amount = round(float(item.get("ingredient_left", 0)), 2)
+
+            if amount <= 0:
+                stop_items.append(name)
+
+        if not stop_items:
+            return "✅ Стоп-листа немає."
+
+        text = "🛑 Стоп-лист:\n\n"
+
+        for name in stop_items:
+            text += f"— {name}\n"
+
+        return text
+
+    except Exception as e:
+        return f"❌ Помилка стоп-листа: {e}"
+
+
 def get_morning_message():
     return (
         "Доброго ранку 🍸\n\n"
-        "⚠️ Що закінчується:\n"
-        "— дивись кнопку ⚠️ Залишки\n\n"
+        f"{get_stop_list_text()}\n\n"
+        "⚠️ Критичні залишки та замовлення дивись у меню бота.\n\n"
         f"{get_cleaning_text()}"
     )
 
@@ -154,8 +186,7 @@ async def send_morning_message():
         try:
             await bot.send_message(user_id, get_morning_message())
         except Exception as e:
-            print (f"Не вдалося відправити нагадування {user_id}: {e}")
-
+            print(f"Не вдалося відправити нагадування {user_id}: {e}")
 
 def load_shift_archive():
     try:
@@ -392,6 +423,7 @@ async def save_open_report(message: types.Message, state: FSMContext):
 
     save_shift_archive(archive)
 
+    await message.answer(get_stop_list_text())
     await message.answer(get_cleaning_text())
 
     await state.clear()
