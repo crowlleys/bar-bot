@@ -150,8 +150,11 @@ def get_morning_message():
 
 
 async def send_morning_message():
-    if CHAT_ID:
-        await bot.send_message(CHAT_ID, get_morning_message())
+    for user_id in ALLOWED_USERS:
+        try:
+            await bot.send_message(user_id, get_morning_message())
+        except Exception as e:
+            print (f"Не вдалося відправити нагадування {user_id}: {e}")
 
 
 def load_shift_archive():
