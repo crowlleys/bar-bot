@@ -298,7 +298,8 @@ async def test_product(message: types.Message):
 
         if query in name:
             text = json.dumps(item, ensure_ascii=False, indent=2)
-            await message.answer(text[:4000])
+    for i in range(0, len(text), 3500):
+        await message.answer(text[i:i + 3500])
             return
 
     await message.answer("Не знайшов такий продукт.")
