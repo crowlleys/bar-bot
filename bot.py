@@ -726,3 +726,27 @@ async def main():
 if __name__ == "__main__":
     threading.Thread(target=run_web).start()
     asyncio.run(main())
+
+@dp.message(Command("check_stock_names"))
+async def check_stock_names(message: types.Message):
+    leftovers = get_leftovers_from_poster()
+    min_stock = load_min_stock()
+
+    poster_names = {item.get("ingredient_name", "") for item in leftovers}
+    missing = []
+
+    for name in min_stock.keys():
+        if name not in poster_names:
+            missing.append(name)
+
+    if not missing:
+        await message.answer("✅ Усі назви з min_stock.json знайдені в Poster.")
+        return
+
+    text = "❌ Не знайдено в Poster:\n\n"
+
+    for name in missing:
+        text += f"— {name}\n"
+
+    for i in range(0, len(text), 3500):
+        await message.answer(text[i:i + 3500])
