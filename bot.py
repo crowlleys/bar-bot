@@ -710,23 +710,6 @@ async def shift_archive(message: types.Message):
     for i in range(0, len(text), 3500):
         await message.answer(text[i:i + 3500])
 
-
-async def main():
-    scheduler = AsyncIOScheduler(timezone="Europe/Kyiv")
-
-    scheduler.add_job(send_morning_message, "cron", day_of_week="mon-fri", hour=16, minute=0)
-    scheduler.add_job(send_morning_message, "cron", day_of_week="sat-sun", hour=14, minute=0)
-
-    scheduler.start()
-
-    print("Бот запущений 🚀")
-    await dp.start_polling(bot)
-
-
-if __name__ == "__main__":
-    threading.Thread(target=run_web).start()
-    asyncio.run(main())
-
 @dp.message(Command("check_stock_names"))
 async def check_stock_names(message: types.Message):
     leftovers = get_leftovers_from_poster()
@@ -750,3 +733,20 @@ async def check_stock_names(message: types.Message):
 
     for i in range(0, len(text), 3500):
         await message.answer(text[i:i + 3500])
+
+
+async def main():
+    scheduler = AsyncIOScheduler(timezone="Europe/Kyiv")
+
+    scheduler.add_job(send_morning_message, "cron", day_of_week="mon-fri", hour=16, minute=0)
+    scheduler.add_job(send_morning_message, "cron", day_of_week="sat-sun", hour=14, minute=0)
+
+    scheduler.start()
+
+    print("Бот запущений 🚀")
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    threading.Thread(target=run_web).start()
+    asyncio.run(main())
