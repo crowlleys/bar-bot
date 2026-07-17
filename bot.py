@@ -65,7 +65,6 @@ dp.message.middleware(AccessMiddleware())
 menu_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🕘 Зміна")],
-        [KeyboardButton(text="🍸 Меню")],
         [KeyboardButton(text="⚠️ Залишки")],
         [KeyboardButton(text="📚 Архів змін")],
         [KeyboardButton(text="🧾 Продажі")],
