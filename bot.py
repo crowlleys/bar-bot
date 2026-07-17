@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 from aiogram import Bot, Dispatcher, types, BaseMiddleware
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
@@ -141,24 +141,38 @@ def get_cleaning_text():
 
 NOTES_FOLDER = "notes"
 
+ALLOWED_NOTE_EXTENSIONS = [
+    ".txt", ".pdf", ".xlsx", ".xls", ".docx", ".doc", ".png", ".jpg", ".jpeg"
+]
+
+
+def get_notes_files():
+    try:
+        files = os.listdir(NOTES_FOLDER)
+    except:
+        return []
+
+    result = []
+
+    for file in files:
+        file_path = os.path.join(NOTES_FOLDER, file)
+
+        if not os.path.isfile(file_path):
+            continue
+
+        file_ext = os.path.splitext(file)[1].lower()
+
+        if file_ext in ALLOWED_NOTE_EXTENSIONS:
+            result.append(file)
+
+    return sorted(result)
+
 
 def get_notes_keyboard():
     buttons = []
 
-    try:
-        files = os.listdir(NOTES_FOLDER)
-    except:
-        files = []
-
-    txt_files = []
-
-    for file in files:
-        if file.endswith(".txt"):
-            name = file.replace(".txt", "")
-            txt_files.append(name)
-
-    for name in sorted(txt_files):
-        buttons.append([KeyboardButton(text=name)])
+    for file in get_notes_files():
+        buttons.append([KeyboardButton(text=file)])
 
     buttons.append([KeyboardButton(text="⬅️ Назад")])
 
@@ -168,14 +182,13 @@ def get_notes_keyboard():
     )
 
 
-def read_note_file(note_name):
-    file_path = os.path.join(NOTES_FOLDER, f"{note_name}.txt")
+def get_note_file_path(file_name):
+    files = get_notes_files()
 
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            return file.read()
-    except:
+    if file_name not in files:
         return None
+
+    return os.path.join(NOTES_FOLDER, file_name)
 
 def get_stop_list_text():
     try:
@@ -666,6 +679,42 @@ async def all_stock(message: types.Message):
 
     except Exception as e:
         await message.answer(f"Помилка залишків: {e}")
+
+@dp.message(lambda message: message.text == "📌 Памʼятки")
+async def notes_menu(message: types.Message):
+    files = get_notes_files()
+
+    if not files:
+        await message.answer("📌 Памʼятки поки порожні.")
+        return
+
+    await message.answer(
+        "📌 Памʼятки\n\nОбери файл:",
+        reply_markup=get_notes_keyboard()
+    )
+
+
+@dp.message(lambda message: message.text == "⬅️ Назад")
+async def back_to_main_menu(message: types.Message):
+    await message.answer(
+        "Головне меню:",
+        reply_markup=menu_keyboard
+    )
+
+
+@dp.message()
+async def open_note_file(message: types.Message):
+    file_path = get_note_file_path(message.text)
+
+    if file_path is None:
+        return
+
+    document = FSInputFile(file_path)
+
+    await message.answer_document(
+        document=document,
+        caption=f"📎 {message.text}"
+    )
 
 
 @dp.message(lambda message: message.text == "🧾 Продажі")
