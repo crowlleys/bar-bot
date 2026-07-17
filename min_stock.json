@@ -41,15 +41,11 @@
 
   "Бурбон Boulevardier": 0.2,
   "Бурбон Four Roses": 0.2,
-
   "Віскі Label 5": 0.2,
   "Віскі Laphroaig": 0.2,
   "Віскі Paddy": 0.2,
   "Віскі West Cork": 0.2,
   "Віскі Wild Turkey": 0.2,
-
-  "Вермут Cinzano Extra Dry": 0.2,
-  "Вермут Negroni Rosso ": 0.2,
 
   "Вино Amalinda Sauvignon Blanc": 0.4,
   "Вино Entre Nous red": 0.3,
@@ -62,27 +58,31 @@
 
   "Горілка  Nemiroff Оригінал": 0.2,
   "Горілка Cranberry Lithuanian": 0.2,
-  "Stoli Salted Karamel": 0.2,
+  "Stoli Salted Karamel": 1.0,
 
   "Джин Ginbery's": 0.2,
 
   "Кіш без м'яса": 2,
   "Кіш з м'ясом або лососем": 2,
 
-  "Лікер DeKuyper Яблуко ": 0.2,
+  "Лікер DeKuyper Яблуко": 0.2,
+  "Лікер Wild Strawberry": 0.2,
   "Лікер Fireball": 0.2,
   "Лікер Koskenkorva Ginger": 0.2,
   "Лікер Koskenkorva Minttu": 0.2,
   "Лікер Mollys Irish Cream": 0.2,
   "Лікер Schwartzhog": 0.2,
-  "Лікер Shankys whip": 0.2,
+  "Лікер Shankys Whip": 0.2,
   "Лікер Valhalla": 0.2,
-  "Лікер Рута": 0.2,
-  "Cointreau лікер": 0.2,
-  "Negroni Aperitivo": 0.2,
-  "Aperitivo Bitter Spritz (апероль)": 0.2,
+  "Лікер RUTA": 0.2,
+  "Лікер Cointreau": 0.2,
   "Лікер 43": 0.2,
-  "Jagermeister": 0.2,
+  "Лікер Jagermeister": 0.2,
+  "Бітер Aperitivo Bitter Spritz": 0.2,
+  "Бітер Negroni Aperitivo": 0.2,
+  "Бітер Negroni OLD1919": 0.2,
+  "Вермут Cinzano Extra Dry": 0.2,
+  "Вермут Negroni Rosso ": 0.2,
 
   "Настоянка Бузина": 0.3,
   "Настоянка Вишня": 0.3,
