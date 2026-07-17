@@ -66,6 +66,7 @@ menu_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🕘 Зміна")],
         [KeyboardButton(text="⚠️ Залишки")],
+        [KeyboardButton(text="📌 Памʼятки")],
         [KeyboardButton(text="📚 Архів змін")],
         [KeyboardButton(text="🧾 Продажі")],
     ],
@@ -138,6 +139,43 @@ def get_cleaning_text():
 
     return text
 
+NOTES_FOLDER = "notes"
+
+
+def get_notes_keyboard():
+    buttons = []
+
+    try:
+        files = os.listdir(NOTES_FOLDER)
+    except:
+        files = []
+
+    txt_files = []
+
+    for file in files:
+        if file.endswith(".txt"):
+            name = file.replace(".txt", "")
+            txt_files.append(name)
+
+    for name in sorted(txt_files):
+        buttons.append([KeyboardButton(text=name)])
+
+    buttons.append([KeyboardButton(text="⬅️ Назад")])
+
+    return ReplyKeyboardMarkup(
+        keyboard=buttons,
+        resize_keyboard=True
+    )
+
+
+def read_note_file(note_name):
+    file_path = os.path.join(NOTES_FOLDER, f"{note_name}.txt")
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            return file.read()
+    except:
+        return None
 
 def get_stop_list_text():
     try:
@@ -741,7 +779,36 @@ async def shift_archive(message: types.Message):
 
     for i in range(0, len(text), 3500):
         await message.answer(text[i:i + 3500])
-        
+
+@dp.message(lambda message: message.text == "📌 Памʼятки")
+async def notes_menu(message: types.Message):
+    await message.answer(
+        "📌 Памʼятки\n\nОбери потрібний файл:",
+        reply_markup=get_notes_keyboard()
+    )
+
+
+@dp.message(lambda message: message.text == "⬅️ Назад")
+async def back_to_main_menu(message: types.Message):
+    await message.answer(
+        "Головне меню:",
+        reply_markup=menu_keyboard
+    )
+
+
+@dp.message()
+async def open_note_file(message: types.Message):
+    note_text = read_note_file(message.text)
+
+    if note_text is None:
+        return
+
+    title = message.text
+
+    text = f"{title}\n\n{note_text}"
+
+    for i in range(0, len(text), 3500):
+        await message.answer(text[i:i + 3500])        
 
 
 async def main():
